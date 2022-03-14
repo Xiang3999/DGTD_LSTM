@@ -10,48 +10,69 @@ import torch
 from torch import nn
 from d2l import torch as d2l
 
-
 batch_size, num_steps = 32, 35
 train_iter, vocab = d2l.load_data_time_machine(batch_size, num_steps)
 
+
 def get_lstm_params(vocab_size, num_hiddens, device):
     """
-    Args:
-        vocab_size:
-        num_hiddens:
-        device:
-
-    Returns:
-
+    :param vocab_size:
+    :param num_hiddens:
+    :param device:
+    :return:
     """
 
     num_inputs = num_outputs = vocab_size
+
     def normal(shape):
-        return torch.randn(size=shape, device=device)*0.01
+        """
+        :param shape:
+        :return:
+        """
+        return torch.randn(size=shape, device=device) * 0.01
+
     def three():
-        return (normal((num_inputs, num_hiddens)),normal((num_hiddens, num_hiddens)),
+        """
+        :return:
+        """
+        return (normal((num_inputs, num_hiddens)), normal((num_hiddens, num_hiddens)),
                 torch.zeros(num_hiddens, device=device))
-    W_xi, W_hi, b_i = three() # 输⼊⻔参数
-    W_xf, W_hf, b_f = three() # 遗忘⻔参数
-    W_xo, W_ho, b_o = three() # 输出⻔参数
-    W_xc, W_hc, b_c = three() # 候选记忆元参数
+
+    W_xi, W_hi, b_i = three()  # 输⼊⻔参数
+    W_xf, W_hf, b_f = three()  # 遗忘⻔参数
+    W_xo, W_ho, b_o = three()  # 输出⻔参数
+    W_xc, W_hc, b_c = three()  # 候选记忆元参数
     # 输出层参数
     W_hq = normal((num_hiddens, num_outputs))
     b_q = torch.zeros(num_outputs, device=device)
     # 附加梯度
     params = [W_xi, W_hi, b_i, W_xf, W_hf, b_f, W_xo, W_ho, b_o, W_xc, W_hc,
-    b_c, W_hq, b_q]
+              b_c, W_hq, b_q]
     for param in params:
         param.requires_grad_(True)
     return params
 
+
 def init_lstm_state(batch_size, num_hiddens, device):
+    """
+    :param batch_size:
+    :param num_hiddens:
+    :param device:
+    :return:
+    """
     return (torch.zeros((batch_size, num_hiddens), device=device),
             torch.zeros((batch_size, num_hiddens), device=device))
 
+
 def lstm(inputs, state, params):
+    """
+    :param inputs:
+    :param state:
+    :param params:
+    :return:
+    """
     [W_xi, W_hi, b_i, W_xf, W_hf, b_f, W_xo, W_ho, b_o, W_xc, W_hc, b_c,
-    W_hq, b_q] = params
+     W_hq, b_q] = params
     (H, C) = state
     outputs = []
     for X in inputs:
