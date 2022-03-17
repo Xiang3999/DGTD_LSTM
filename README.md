@@ -14,4 +14,4 @@
 
 [Pytorch Docs](https://pytorch.org/docs/stable/index.html)
 
-test 
+[ML Glossary ---> RNN architectures](https://ml-cheatsheet.readthedocs.io/en/latest/architectures.html)
