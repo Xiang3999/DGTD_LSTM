@@ -6,6 +6,7 @@ import os
 import numpy as np
 import scipy.io as sio
 import h5py
+import torch.nn as nn
 
 
 def read_data(mat):
@@ -119,9 +120,10 @@ def computeErr(morsolution, dgsolution):
     errHy = np.sum(np.sqrt(np.real(errHy)))
     errEz = np.sum(np.sqrt(np.real(errEz)))
 
+    return errHy, errEz
+
 
 def init_weights(m):
     if type(m) == nn.Linear:
         nn.init.xavier_normal_(m.weight, gain=1)
 
-    return errHy, errEz

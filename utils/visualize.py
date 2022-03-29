@@ -1,4 +1,7 @@
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+from utils.config import conf
 
 def plotloss(epoch, loss_train_list, loss_val_list):
     '''
@@ -16,7 +19,7 @@ def plotloss(epoch, loss_train_list, loss_val_list):
     plt.rcParams['axes.unicode_minus'] = False 
     
     # x label
-    epoch = np.arange(1, options['epoch']+1)
+    epoch = np.arange(1, conf['epoch']+1)
     #fig = plt.figure(figsize = (10, 7), dpi = 300)
     fig = plt.figure()
     # plot the figure
@@ -28,4 +31,3 @@ def plotloss(epoch, loss_train_list, loss_val_list):
 
     plt.show()
     
-def 
