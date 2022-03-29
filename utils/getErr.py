@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+
 class error():
     def __init__(self, Nttr=263):
         self.mortimereErrorEz = np.zeros(Nttr)
