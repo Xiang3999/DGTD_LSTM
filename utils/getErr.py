@@ -1,31 +1,43 @@
-class error():
-    def __init__(self, Nttr=263):
-        self.mortimereErrorEz = np.zeros(Nttr)
-        self.mortimereErrorHy = np.zeros(Nttr)  
-        self.portimereErrorEz = np.zeros(Nttr)  
-        self.portimereErrorHy = np.zeros(Nttr)  
-error = error()
+import numpy as np
+from utils.utils import compute_err
+from scipy.io import savemat, loadmat
 
-def getErr(Nttr, Ndof):
-    '''
-    Input: the number of time instances Nttr, 
-           the degree of freedom Ndof.
+
+class Error():
+    def __init__(self, _nt=263):
+        self.mortime_error_Ez = np.zeros(_nt)
+        self.mortime_error_Hy = np.zeros(_nt)
+        self.portime_error_Ez = np.zeros(_nt)
+        self.portime_error_Hy = np.zeros(_nt)
+
+
+error = Error()
+
+
+def get_err(nt, n_dof):
+    """
+    Input: the number of time instances nt,
+           the degree of freedom ndof.
     Output: the relative error between the DGTD and POD-DL-ROM solution
-    '''
-    mortimeErrorL2 = zeros(1,Nttr)
-    protimeErrorL2 = zeros(1,Nttr)
-    zeronDGTDTime = np.zeros(Ndof,2) # to compute the relative error
-    for i in range(Nttr):
-        MORTime = np.hstack((MORtime.Hye[:, i],MORtime.Eze[:, i]))
-        DGTDTime = np.hstack((DGTDtime.Hye[:, i],DGTDtime.Eze[:, i]))  # snapshot
-        proMORTime = np.hstack((timeparameterPOD.Basis.Hy*(np.transpose(timeparameterPOD.Basis.Hy)*DGTDtime.Hye[:,i]),\
-                     timeparameterPOD.Basis.Ez*(np.transpose(timeparameterPOD.Basis.Ez)*DGTDtime.Eze[:,i])))
-        morerrHy, morerrEz = computeErr(MORTime, DGTDTime)
-        proerrHy, proerrEz = computeErr(proMORTime, DGTDTime)
-        reproerrE, reproerrH = computeErr(zeronDGTDTime,DGTDTime)
-        error.mortimereErrorEz[i] = morerrEz/reproerrEz;
-        error.mortimereErrorHy[i] = morerrHy/reproerrHy;
-        error.protimereErrorEz[i] = proerrEz/reproerrEz;
-        error.protimereErrorHy[i] = proerrHy/reproerrHy;
-        
+    """
+
+    time_parameter_pod = loadmat('../data/timeparameterPOD.mat')
+    dgtd_time = loadmat('../data/DGTDtime')
+    mor_time_error = np.zeros(1, nt)
+    pro_time_error = np.zeros(1, nt)
+    zero_dgtd_time = np.zeros(n_dof, 2)  # to compute the relative error
+    for i in range(nt):
+        mor_time = np.hstack((mor_time.Hye[:, i], mor_time.Eze[:, i]))
+        dgtd_time = np.hstack((dgtd_time.Hye[:, i], dgtd_time.Eze[:, i]))  # snapshot
+        pro_mor_time = np.hstack(
+            (time_parameter_pod.Basis.Hy * (np.transpose(time_parameter_pod.Basis.Hy) * dgtd_time.Hye[:, i]),
+             time_parameter_pod.Basis.Ez * (np.transpose(time_parameter_pod.Basis.Ez) * dgtd_time.Eze[:, i])))
+        mor_err_hy, mor_err_ez = compute_err(mor_time, dgtd_time)
+        pro_err_hy, pro_err_ez = compute_err(pro_mor_time, dgtd_time)
+        repro_err_hy, repro_err_ez = compute_err(zero_dgtd_time, dgtd_time)
+        error.mortime_errorEz[i] = mor_err_ez / repro_err_ez
+        error.mortime_errorHy[i] = mor_err_hy / repro_err_hy
+        error.protime_errorEz[i] = pro_err_ez / repro_err_ez
+        error.protime_errorHy[i] = pro_err_hy / repro_err_hy
+
     return error
