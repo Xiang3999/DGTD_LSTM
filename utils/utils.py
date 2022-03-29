@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-
-'''
+"""
 some utils function for data processing
-'''
+"""
 
 import os
 import numpy as np
@@ -14,16 +13,16 @@ import torch.nn as nn
 
 def read_data(mat):
     data = sio.loadmat(mat)
-    S = data['SN'].squeeze()
-    S = np.transpose(S)
+    s = data['SN'].squeeze()
+    s = np.transpose(s)
 
-    return S
+    return s
 
 
 def read_large_data(mat):
     file = h5py.File(mat, 'r')
-    S = file['SN'][:]
-    return S
+    s = file['SN'][:]
+    return s
 
 
 def read_params(mat):
@@ -34,28 +33,28 @@ def read_params(mat):
     return params
 
 
-def max_min(S):
-    S_max = np.max(np.max(S[:], axis=1), axis=0)
-    S_min = np.min(np.min(S[:], axis=1), axis=0)
+def max_min(s):
+    s_max = np.max(np.max(s[:], axis=1), axis=0)
+    s_min = np.min(np.min(s[:], axis=1), axis=0)
 
-    return S_max, S_min
-
-
-def scaling(S, S_max, S_min):
-    S[:] = (S - S_min) / (S_max - S_min)
-    return S
+    return s_max, s_min
 
 
-def inverse_scaling(S, S_max, S_min):
-    S[:] = (S_max - S_min) * S + S_min
-    return S
+def scaling(s, s_max, s_min):
+    s[:] = (s - s_min) / (s_max - s_min)
+    return s
 
 
-def zero_pad(S, n):
-    paddings = np.zeros((S.shape[0], n))
-    S = np.hstack((S, paddings))
+def inverse_scaling(s, s_max, s_min):
+    s[:] = (s_max - s_min) * s + s_min
+    return s
 
-    return S
+
+def zero_pad(s, n):
+    padding = np.zeros((s.shape[0], n))
+    s = np.hstack((s, padding))
+
+    return s
 
 
 def safe_mkdir(path):
@@ -66,10 +65,10 @@ def safe_mkdir(path):
 
 
 def prepare_data(alpha=0.8):
-    '''
+    """
     param alpha: training-validation splitting fraction
     return: S_train, S_val, M_train, M_val
-    '''
+    """
 
     # load mat
     s = read_data('data/SN.mat')
@@ -101,32 +100,31 @@ def prepare_data(alpha=0.8):
     return s_train, s_val, m_train, m_val, (s_min, s_max, m_min, m_max)
 
 
-def paddata(S):
-    padding_data = np.zeros((S.shape[0], 256 - S.shape[1]))
-    S = np.concatenate([padding_data, S], axis=1)
+def pad_data(s):
+    padding_data = np.zeros((s.shape[0], 256 - s.shape[1]))
+    s = np.concatenate([padding_data, s], axis=1)
 
-    return S
+    return s
 
 
-def computeErr(morsolution, dgsolution):
-    '''
-    Input: the reduced solution podsolution,
-           the numerical solution dgsolution.
+def compute_err(mor_solution, dg_solution):
+    """
+    Input: the reduced solution mor_solution,
+           the numerical solution dg_solution.
     Output: the relative error between the DGTD and POD-DL-ROM solution
-    '''
+    """
     # calculation of the error
-    morHy, morEz = morsolution[:, 0], morsolution[:, 1]
-    dgHy, dgEz = dgsolution[:, 0], dgsolution[:, 1]
-    errHy = np.transpose(dgHy - morHy) * (dgHy - morHy)
-    errEz = np.transpose(dgEz - morEz) * (dgEz - morEz)
+    mor_hy, mor_ez = mor_solution[:, 0], mor_solution[:, 1]
+    dg_hy, dg_ez = dg_solution[:, 0], dg_solution[:, 1]
+    err_hy = np.transpose(dg_hy - mor_hy) * (dg_hy - mor_hy)
+    err_ez = np.transpose(dg_ez - mor_ez) * (dg_ez - mor_ez)
 
-    errHy = np.sum(np.sqrt(np.real(errHy)))
-    errEz = np.sum(np.sqrt(np.real(errEz)))
+    err_hy = np.sum(np.sqrt(np.real(err_hy)))
+    err_ez = np.sum(np.sqrt(np.real(err_ez)))
 
-    return errHy, errEz
+    return err_hy, err_ez
 
 
 def init_weights(m):
     if type(m) == nn.Linear:
         nn.init.xavier_normal_(m.weight, gain=1)
-

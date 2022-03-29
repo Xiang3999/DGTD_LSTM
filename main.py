@@ -11,13 +11,12 @@ from utils.utils import *
 from utils.config import conf
 from Net.pod_dl_rom import PodDlRom
 
-
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  # GPU or CPU
     # prepare data
     S_train, S_val, M_train, M_val, max_min = prepare_data(conf['alpha'])
     print(S_train.shape, S_val.shape, M_train.shape, M_val.shape)
-    S_train, S_val = paddata(S_train), paddata(S_val)
+    S_train, S_val = pad_data(S_train), pad_data(S_val)
     print(S_train.shape, S_val.shape, M_train.shape, M_val.shape)
 
     # build model

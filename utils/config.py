@@ -7,11 +7,11 @@ set the config of model
 
 def set_config():
     config = dict()
-    config['epoch'] = 5000
+    config['epoch'] = 100
     config['alpha'] = 0.8
     config['n'] = 2
     config['n_params'] = 2
-    config['lr'] = 0.0001
+    config['lr'] = 0.001
     config['omega_h'] = 0.5
     config['omega_n'] = 0.5
     config['batch_size'] = 50
@@ -31,5 +31,6 @@ def set_config():
     config['restart'] = False
 
     return config
+
 
 conf = set_config()
