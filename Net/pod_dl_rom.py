@@ -14,7 +14,7 @@ class PodDlRom(nn.Module):
     POD_DL_ROM net model
     """
 
-    def __init__(self, n=2):
+    def __init__(self, n=4):
         super(PodDlRom, self).__init__()
         self.encoder = nn.Sequential(
             # (16, 16, 1) ---> (16, 16, 8)
@@ -70,11 +70,11 @@ class PodDlRom(nn.Module):
         self.dfnn = nn.Sequential(
             nn.Linear(2, 64),
             nn.ELU(),
-            nn.Linear(64, 128),
+            nn.Linear(64, 64),
             nn.ELU(),
-            nn.Linear(128, 64),
+            nn.Linear(64, 64),
             nn.ELU(),
-            nn.Linear(64, 2),
+            nn.Linear(64, 4),
             nn.Sigmoid()
         )
 
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     import pdb
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  # GPU or CPU
     parameters_setting = {'epoch': 5000,
-                          'lr': 0.00005,
+                          'lr': 0.05,
                           'epoch_print': 10,
                           'epoch_save': 1000,
                           'num_layers': 5,
@@ -179,7 +179,7 @@ if __name__ == '__main__':
     loss_train = 0
     for _ in range(parameters_setting['epoch']):
         # trainging--------------------------------
-        for i in range(280):
+        for i in range(20):
             y_train1 = y_train[i*50:(i+1)*50, :].reshape(50, 1, 16, 16)
             y_train1 = torch.Tensor(y_train1).to(device)
             x_train1 = x_train[i*50:(i+1)*50, :]
