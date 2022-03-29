@@ -21,27 +21,26 @@ if __name__ == '__main__':
 
     # build model
     net = PodDlRom().to(device)
-    print(net)
+    # print(net)
 
     # initialize weight parameters
     net.apply(init_weights)
 
-    # 优化器
-    optimizer_1 = torch.optim.Adam(net.parameters(), conf['lr'])
-    # 损失函数
+    # optimizer
+    optimizer = torch.optim.Adam(net.parameters(), conf['lr'])
+    # loss function
     loss_func = torch.nn.MSELoss()
-    # 模型训练
+    # train model
     loss_train_list = []
     loss_val_list = []
     loss_train = 0
     for _ in range(conf['epoch']):
-        # training--------------------------------
         for i in range(340):
             y_train1 = S_train[i * 50:(i + 1) * 50, :].reshape(50, 1, 16, 16)
             y_train1 = torch.Tensor(y_train1).to(device)
             x_train1 = M_train[i * 50:(i + 1) * 50, :]
             x_train1 = torch.Tensor(x_train1).to(device)
-            optimizer_1.zero_grad()  # 梯度清零
+            optimizer.zero_grad()  # 梯度清零
             net.train()
 
             _z0, _z1, _y0 = net(x_train1, y_train1)
@@ -53,7 +52,7 @@ if __name__ == '__main__':
             loss_train = 0.5 * loss_train2 + 0.5 * loss_train1
 
             loss_train.backward()
-            optimizer_1.step()  # 参数更新
+            optimizer.step()  # 参数更新
             loss_train_list.append(loss_train.data.cpu().numpy())
 
         net.eval()
