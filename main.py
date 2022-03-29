@@ -40,7 +40,7 @@ if __name__ == '__main__':
             y_train1 = torch.Tensor(y_train1).to(device)
             x_train1 = M_train[i * 50:(i + 1) * 50, :]
             x_train1 = torch.Tensor(x_train1).to(device)
-            optimizer.zero_grad()  # 梯度清零
+            optimizer.zero_grad()  # clear the gradients
             net.train()
 
             _z0, _z1, _y0 = net(x_train1, y_train1)
@@ -52,7 +52,7 @@ if __name__ == '__main__':
             loss_train = 0.5 * loss_train2 + 0.5 * loss_train1
 
             loss_train.backward()
-            optimizer.step()  # 参数更新
+            optimizer.step()  # update weights
             loss_train_list.append(loss_train.data.cpu().numpy())
 
         net.eval()
