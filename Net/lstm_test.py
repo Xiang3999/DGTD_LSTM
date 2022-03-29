@@ -3,7 +3,6 @@
 '''
 @Project ：DGTD_LSTM 
 @File    ：lstm_test.py
-@Author  ： XiangWANG
 @Date    ：3/14/2022 3:50 PM 
 '''
 import torch

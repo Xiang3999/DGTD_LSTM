@@ -33,3 +33,10 @@ What’s the difference between a Sequential and a torch.nn.ModuleList? A Module
 `torch.optim is` a package implementing various optimization algorithms.
 
 > 是一个包，里面实现了很多常用的优化函数。
+
+## [torch.nn.Conv2d]()
+
+```python
+class torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True)
+```
+

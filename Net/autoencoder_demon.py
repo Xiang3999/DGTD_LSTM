@@ -3,7 +3,6 @@
 """
 @Project ：DGTD_LSTM 
 @File    ：autoencoder_demon.py
-@Author  ： XiangWANG
 @Date    ：3/17/2022 8:44 AM 
 """
 import time
@@ -79,7 +78,6 @@ class AutoEncoder(nn.Module):
 
     def forward(self, _x):
         """
-        前向网络
         :param _x:
         :return:
         """
@@ -99,6 +97,8 @@ for epoch in range(EPOCH):
         b_x = x.view(-1, 28 * 28)
         b_y = x.view(-1, 28 * 28)
         b_label = y
+        print(b_x.size())
+        exit()
         encoded, decoded = Coder(b_x)
         loss = loss_func(decoded, b_y)
 
