@@ -36,7 +36,7 @@ if __name__ == '__main__':
     loss_val_list = []
     loss_train = 0
     for _ in range(conf['epoch']):
-        # trainging--------------------------------
+        # training--------------------------------
         for i in range(340):
             y_train1 = S_train[i * 50:(i + 1) * 50, :].reshape(50, 1, 16, 16)
             y_train1 = torch.Tensor(y_train1).to(device)
@@ -57,8 +57,15 @@ if __name__ == '__main__':
             optimizer_1.step()  # 参数更新
             loss_train_list.append(loss_train.data.cpu().numpy())
 
-        # printing error
-        print('epoch {}, Train Loss: {:.6f}'.format(_, loss_train.item()))
+        net.eval()
+        S0_val = S_val.reshape(S_val.shape[0], 1, 16, 16)
+        S0_val = torch.Tensor(S0_val).to(device)
+        M0_val = torch.Tensor(M_val).to(device)
+        a, b, c = net(M0_val, S0_val)
+        loss_val = 0.5*loss_func(a, b)+0.5*loss_func(c, S0_val)
+        loss_val_list.append(loss_val.data.cpu().numpy())
+
+        print('epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
 
     filename = "model_pod_ml" + (str(conf['lr']).replace('0.', '_'))
     torch.save(net, '..\\data\\'+filename)

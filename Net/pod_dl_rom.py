@@ -49,7 +49,6 @@ class PodDlRom(nn.Module):
             nn.ELU(),
             # 256 ---> (2, 2, 64)
             nn.Unflatten(1, (64, 2, 2)),
-            # TODO batch size need modify
             # (2, 2, 64)  ---> (4, 4, 64)
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(5, 5), padding=5, stride=2),
             nn.BatchNorm2d(64),
