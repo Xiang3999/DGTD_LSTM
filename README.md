@@ -1,5 +1,13 @@
 # Non-intrusive model order reduction(MOR) Data Driving methods
 
+## TODO LIST
+
+- [ ] add logging feature
+- [ ] add visualize feature
+- [ ] add calculate relative error feature
+- [ ] add PINN loss
+- [ ] parameter tuning 
+
 ## ENV
 
 > win 11 64bit
@@ -34,22 +42,22 @@
 
 > 从神经网络讲到PINNs, 内容还不错，但是音频质量太差了。
 
-[PINN code demon1](https://github.com/cwq2016/POD-PINN)
+[[code] PINN code demon1](https://github.com/cwq2016/POD-PINN)
 
 > 这里面有 PINN、PDNN的算法实现，并且测试用例有1、2、3维的数据。使用的是Pytorch进行实现的。
 
-[PINN_code_demon2](https://github.com/maziarraissi/PINNs)
+[[code] PINN_code_demon2](https://github.com/maziarraissi/PINNs)
 
 > 这个是非常著名的框架，作者是Maziar Raissi，必看！
 
-[PINN_code_demon3](https://github.com/jayroxis/PINNs.git)
+[[code] PINN_code_demon3](https://github.com/jayroxis/PINNs.git)
 
 > 这个是使用Maziar Raissi的代码框架，然后作者自己实现了pytorch、tensorflow的代码。
 
-[PINN_Papers_Summarize_repo](https://github.com/idrl-lab/PINNpapers)
+[[code] PINN_Papers_Summarize_repo](https://github.com/idrl-lab/PINNpapers)
 
 > 总结 PINNs papers 的repo。
 
-[ML Glossary ---> RNN architectures](https://ml-cheatsheet.readthedocs.io/en/latest/architectures.html)
+[[doc] ML Glossary ---> RNN architectures](https://ml-cheatsheet.readthedocs.io/en/latest/architectures.html)
 
 > 主要讲RNN、Auto encoder、Gan等网络的架构，值得阅读，这个网站也不错，可以深度探索。
