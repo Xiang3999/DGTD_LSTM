@@ -60,4 +60,5 @@ if __name__ == '__main__':
         # printing error
         print('epoch {}, Train Loss: {:.6f}'.format(_, loss_train.item()))
 
-    torch.save(net, '..\\data\\net_pod_ml_rom.pkl')
+    filename = "model_pod_ml" + (str(conf['lr']).replace('0.', '_'))
+    torch.save(net, '..\\data\\'+filename)
