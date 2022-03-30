@@ -7,7 +7,7 @@
 """
 import torch
 import torch.nn as nn
-
+from utils.flatten import Flatten, Unflatten
 
 class PodDlRom(nn.Module):
     """
@@ -34,7 +34,7 @@ class PodDlRom(nn.Module):
             nn.BatchNorm2d(64),
             nn.ELU(),
             # (2, 2, 64) --->N_h
-            nn.Flatten(),
+            Flatten(),
             nn.Linear(256, 256),
             nn.ELU(),
             # 256 ---> n
@@ -48,7 +48,7 @@ class PodDlRom(nn.Module):
             nn.Linear(256, 256),
             nn.ELU(),
             # 256 ---> (2, 2, 64)
-            nn.Unflatten(1, (64, 2, 2)),
+            Unflatten(1, (64, 2, 2)),
             # (2, 2, 64)  ---> (4, 4, 64)
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(5, 5), padding=5, stride=2),
             nn.BatchNorm2d(64),
