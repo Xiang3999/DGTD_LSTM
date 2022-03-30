@@ -84,7 +84,7 @@ def main():
 
     filename = "model_pod_ml" + (str(conf['lr']).replace('0.', '_'))
     logger.info("save mode to ./data/%s" % filename)
-    torch.save(net, './data/'+filename+'pkl')
+    torch.save(net, './data/'+filename+'.pkl')
     plot_loss(loss_train_list, loss_val_list, filename)
 
 

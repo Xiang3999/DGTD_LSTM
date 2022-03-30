@@ -36,8 +36,8 @@ def plot_loss(loss_train_list, loss_val_list, filename=None):
     plt.plot(x, loss_train_list, 'r--', label=r'train loss')
     plt.plot(x, loss_val_list, 'g--', label=r'val loss')
     # plot min loss point
-    show_min = '[' + str(min_index) + ' ' + str(loss_train_list[min_index]) + ']'
-    plt.annotate(show_min, text=(min_index, loss_train_list[min_index]), xy=(min_index, loss_train_list[min_index]))
+    show_min = '[' + str(min_index) + ' ' + str("%.6f" % loss_train_list[min_index]) + ']'
+    plt.annotate(show_min, xytext=(min_index, loss_train_list[min_index]), xy=(min_index, loss_train_list[min_index]))
     plt.xlabel(r"epoch")
     plt.ylabel(r"loss")
     plt.legend()
