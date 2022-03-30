@@ -9,7 +9,7 @@ import numpy as np
 import scipy.io as sio
 import h5py
 import torch.nn as nn
-
+from Log.log import logger
 
 def read_data(mat):
     data = sio.loadmat(mat)
@@ -71,8 +71,9 @@ def prepare_data(alpha=0.8):
     """
 
     # load mat
-    s = read_data('data/SN.mat')
-    m = read_params('data/M.mat')
+    logger.debug("loading data from SN.mat and M.mat")
+    s = read_data('./data/SN.mat')
+    m = read_params('./data/M.mat')
 
     # shuffle
     indices = np.arange(s.shape[0])
@@ -101,6 +102,7 @@ def prepare_data(alpha=0.8):
 
 
 def pad_data(s):
+    logger.debug("start padding data")
     padding_data = np.zeros((s.shape[0], 256 - s.shape[1]))
     s = np.concatenate([padding_data, s], axis=1)
 
@@ -113,6 +115,7 @@ def compute_err(mor_solution, dg_solution):
            the numerical solution dg_solution.
     Output: the relative error between the DGTD and POD-DL-ROM solution
     """
+    logger.debug("start compute error")
     # calculation of the error
     mor_hy, mor_ez = mor_solution[:, 0], mor_solution[:, 1]
     dg_hy, dg_ez = dg_solution[:, 0], dg_solution[:, 1]

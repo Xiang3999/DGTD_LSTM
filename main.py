@@ -5,23 +5,28 @@
 @File    ：main.py
 @Date    ：3/29/2022 11:07 AM 
 """
-import logging
 import torch
 from utils.utils import *
 from utils.config import conf
 from Net.pod_dl_rom import PodDlRom
+from Log.log import logger
+
 
 if __name__ == '__main__':
+    logger.info("Start !")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  # GPU or CPU
     # prepare data
     S_train, S_val, M_train, M_val, max_min = prepare_data(conf['alpha'])
-    print(S_train.shape, S_val.shape, M_train.shape, M_val.shape)
+    logger.info("data shape: S_train-%s, S_val-%s, M_train-%s, M_val-%s" %
+                (S_train.shape, S_val.shape, M_train.shape, M_val.shape))
     S_train, S_val = pad_data(S_train), pad_data(S_val)
-    print(S_train.shape, S_val.shape, M_train.shape, M_val.shape)
-
+    logger.info("padding data shape: S_train-%s, S_val-%s, M_train-%s, M_val-%s" %
+                (S_train.shape, S_val.shape, M_train.shape, M_val.shape))
     # build model
     net = PodDlRom().to(device)
-    print(net)
+
+    logger.info("net structure: %s" % net)
+    logger.info("net conf: %s" % conf)
 
     # initialize weight parameters
     net.apply(init_weights)
@@ -34,6 +39,7 @@ if __name__ == '__main__':
     loss_train_list = []
     loss_val_list = []
     loss_train = 0
+    logger.info("Start train model !")
     for _ in range(conf['epoch']):
         # training--------------------------------
         for i in range(340):
@@ -63,8 +69,8 @@ if __name__ == '__main__':
         a, b, c = net(M0_val, S0_val)
         loss_val = 0.5*loss_func(a, b)+0.5*loss_func(c, S0_val)
         loss_val_list.append(loss_val.data.cpu().numpy())
-
+        logger.info('Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
         print('epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
 
     filename = "model_pod_ml" + (str(conf['lr']).replace('0.', '_'))
-    torch.save(net, '..\\data\\'+filename)
+    torch.save(net, './data/'+filename)

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-'''
+"""
 set the config of model
-'''
+"""
 
 
 def set_config():

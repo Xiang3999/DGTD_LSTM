@@ -2,7 +2,7 @@
 
 ## TODO LIST
 
-- [ ] add logging feature
+- [X] add logging feature
 - [ ] add visualize feature
 - [ ] add calculate relative error feature
 - [ ] add PINN loss
