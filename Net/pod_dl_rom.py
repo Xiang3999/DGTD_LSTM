@@ -8,6 +8,7 @@
 import torch
 import torch.nn as nn
 
+
 class PodDlRom(nn.Module):
     """
     POD_DL_ROM net model
@@ -72,7 +73,7 @@ class PodDlRom(nn.Module):
             nn.ELU(),
             nn.Linear(64, 64),
             nn.ELU(),
-            nn.Linear(64, 4),
+            nn.Linear(64, n),
             nn.Sigmoid()
         )
 

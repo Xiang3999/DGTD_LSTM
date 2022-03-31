@@ -7,9 +7,9 @@ set the config of model
 
 def set_config():
     config = dict()
-    config['epoch'] = 100
+    config['epoch'] = 10
     config['alpha'] = 0.8
-    config['n'] = 2
+    config['n'] = 4
     config['n_params'] = 2
     config['lr'] = 0.001
     config['omega_h'] = 0.5
