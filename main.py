@@ -25,11 +25,7 @@ def train():
     logger.info("padding data shape: S_train-%s, S_val-%s, M_train-%s, M_val-%s" %
                 (S_train.shape, S_val.shape, M_train.shape, M_val.shape))
     # build model
-<<<<<<< HEAD
     net = PodDlRom(conf['n'], max_min).to(device)
-=======
-    net = PodDlRom(conf['n']).to(device)
->>>>>>> 85a093831501d1bd2da5b95ba4f995c499cd3c37
 
     logger.info("net structure: %s" % net)
     logger.info("net conf: %s" % conf)
