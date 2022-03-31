@@ -24,7 +24,7 @@ def main():
     logger.info("padding data shape: S_train-%s, S_val-%s, M_train-%s, M_val-%s" %
                 (S_train.shape, S_val.shape, M_train.shape, M_val.shape))
     # build model
-    net = PodDlRom().to(device)
+    net = PodDlRom(conf['n']).to(device)
 
     logger.info("net structure: %s" % net)
     logger.info("net conf: %s" % conf)
