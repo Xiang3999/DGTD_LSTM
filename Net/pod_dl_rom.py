@@ -14,8 +14,9 @@ class PodDlRom(nn.Module):
     POD_DL_ROM net model
     """
 
-    def __init__(self, n=4):
+    def __init__(self, n, max_min):
         super(PodDlRom, self).__init__()
+        self.max_min = max_min
         self.encoder = nn.Sequential(
             # (16, 16, 1) ---> (16, 16, 8)
             nn.Conv2d(in_channels=1, out_channels=8, kernel_size=(5, 5), padding=2, stride=1),
@@ -64,7 +65,7 @@ class PodDlRom(nn.Module):
             # (16, 16, 16) ---> (16, 16, 1)
             nn.Conv2d(in_channels=16, out_channels=1, kernel_size=(5, 5), padding=2, stride=1),
             nn.BatchNorm2d(1),
-            # nn.Sigmoid()
+            nn.Sigmoid()
         )
         self.dfnn = nn.Sequential(
             nn.Linear(2, 64),
@@ -96,7 +97,3 @@ class PodDlRom(nn.Module):
             _z1 = self.dfnn(_x)
             _y0 = self.decoder(_z1)
             return [_y0]
-
-
-
-

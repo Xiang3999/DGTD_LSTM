@@ -11,6 +11,7 @@ import h5py
 import torch.nn as nn
 from Log.log import logger
 
+
 def read_data(mat):
     data = sio.loadmat(mat)
     s = data['SN'].squeeze()
@@ -29,6 +30,13 @@ def read_params(mat):
     params = sio.loadmat(mat)
     params = params['M'].squeeze()
     params = np.transpose(params)
+
+    return params
+
+
+def read_params_test(mat):
+    params = sio.loadmat(mat)
+    params = params['M_test']
 
     return params
 
@@ -72,8 +80,8 @@ def prepare_data(alpha=0.8):
 
     # load mat
     logger.debug("loading data from SN.mat and M.mat")
-    s = read_data('./data/SN.mat')
-    m = read_params('./data/M.mat')
+    s = read_data('./data/train/SN.mat')
+    m = read_params('./data/train/M.mat')
 
     # shuffle
     indices = np.arange(s.shape[0])

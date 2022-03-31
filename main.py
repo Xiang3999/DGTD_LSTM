@@ -11,20 +11,21 @@ from utils.config import conf
 from utils.visualize import plot_loss
 from Net.pod_dl_rom import PodDlRom
 from Log.log import logger
+from scipy.io import loadmat
 
 
-def main():
+def train():
     logger.info("Start !")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  # GPU or CPU
     # prepare data
     S_train, S_val, M_train, M_val, max_min = prepare_data(conf['alpha'])
-    logger.info("data shape: S_train-%s, S_val-%s, M_train-%s, M_val-%s" %
-                (S_train.shape, S_val.shape, M_train.shape, M_val.shape))
+    logger.info("data shape: S_train-%s, S_val-%s, M_train-%s, M_val-%s, max_min-%s" %
+                (S_train.shape, S_val.shape, M_train.shape, M_val.shape, max_min))
     S_train, S_val = pad_data(S_train), pad_data(S_val)
     logger.info("padding data shape: S_train-%s, S_val-%s, M_train-%s, M_val-%s" %
                 (S_train.shape, S_val.shape, M_train.shape, M_val.shape))
     # build model
-    net = PodDlRom(conf['n']).to(device)
+    net = PodDlRom(conf['n'], max_min).to(device)
 
     logger.info("net structure: %s" % net)
     logger.info("net conf: %s" % conf)
@@ -69,7 +70,7 @@ def main():
         S0_val = torch.Tensor(S0_val).to(device)
         M0_val = torch.Tensor(M_val).to(device)
         a, b, c = net(M0_val, S0_val)
-        loss_val = 0.5*loss_func(a, b)+0.5*loss_func(c, S0_val)
+        loss_val = 0.5 * loss_func(a, b) + 0.5 * loss_func(c, S0_val)
         loss_val_list.append(loss_val.item())
 
         logger.info('Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
@@ -84,14 +85,15 @@ def main():
 
     filename = "model_pod_ml" + (str(conf['lr']).replace('0.', '_'))
     logger.info("save mode to ./data/%s" % filename)
-    torch.save(net, './data/'+filename+'.pkl')
+    torch.save(net, './data/' + filename + '.pkl')
     plot_loss(loss_train_list, loss_val_list, filename)
 
 
 if __name__ == '__main__':
     try:
-        main()
+        train()
     except Exception as e:
         import traceback
+
         logger.error(e)
         logger.error(traceback.format_exc())

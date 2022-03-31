@@ -18,6 +18,20 @@
 >
 > For more python package versions, please see [requirements.txt](requirements.txt)
 
+## GIT TIPS
+
+```git
+git init 
+git push -u origin main # gitlab master github main
+git pull 
+
+git stash  # 将代码保存到暂存区
+git stash list 
+git stash show 
+git stash apply
+git rm -r env/ --cached
+```
+
 ## REF
 
 ### PYTORCH

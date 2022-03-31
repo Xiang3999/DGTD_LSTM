@@ -9,8 +9,8 @@ def set_config():
     config = dict()
     config['epoch'] = 10
     config['alpha'] = 0.8
-    config['n'] = 4
-    config['n_params'] = 2
+    config['n'] = 2
+    config['n_params'] = 1
     config['lr'] = 0.001
     config['omega_h'] = 0.5
     config['omega_n'] = 0.5
