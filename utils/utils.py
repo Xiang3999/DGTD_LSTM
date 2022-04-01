@@ -58,13 +58,6 @@ def inverse_scaling(s, s_max, s_min):
     return s
 
 
-def zero_pad(s, n):
-    padding = np.zeros((s.shape[0], n))
-    s = np.hstack((s, padding))
-
-    return s
-
-
 def safe_mkdir(path):
     try:
         os.mkdir(path)
@@ -73,9 +66,9 @@ def safe_mkdir(path):
 
 
 def prepare_data(alpha=0.8):
-    """
-    param alpha: training-validation splitting fraction
-    return: S_train, S_val, M_train, M_val
+    """prepare data
+    :param alpha: training-validation splitting fraction
+    :return: S_train, S_val, M_train, M_val
     """
 
     # load mat
@@ -109,19 +102,34 @@ def prepare_data(alpha=0.8):
     return s_train, s_val, m_train, m_val, (s_min, s_max, m_min, m_max)
 
 
-def pad_data(s):
+def pad_data(_data):
+    """(n, 204) --> (n, 256)
+    :param _data:
+    :return :
+    """
     logger.debug("start padding data")
-    padding_data = np.zeros((s.shape[0], 256 - s.shape[1]))
-    s = np.concatenate([padding_data, s], axis=1)
+    padding_data = np.zeros((_data.shape[0], 256 - _data.shape[1]))
+    _data = np.concatenate([padding_data, _data], axis=1)
 
-    return s
+    return _data
+
+
+def rm_pad_data(_data):
+    """(n, 1, 16, 16) --> (n, 256) --> (n, 204)
+    :param _data:
+    :return :
+    """
+    logger.debug("start rm padding data")
+    data_n_256 = _data.reshape(_data.shape[0], 256)
+    data_n_204 = data_n_256[:, 52:256]
+    return data_n_204
 
 
 def compute_err(mor_solution, dg_solution):
-    """
-    Input: the reduced solution mor_solution,
-           the numerical solution dg_solution.
-    Output: the relative error between the DGTD and POD-DL-ROM solution
+    """computer error
+    :param mor_solution: the reduced solution mor_solution,
+    :param dg_solution: the numerical solution dg_solution.
+    :return: the relative error between the DGTD and POD-DL-ROM solution
     """
     logger.debug("start compute error")
     # calculation of the error
