@@ -12,12 +12,11 @@ from utils.visualize import plot_loss, plot_time_field, plot_time_error
 from Net.pod_dl_rom import PodDlRom
 from Log.log import logger
 from scipy.io import loadmat
-import matplotlib.pyplot as plt
-
+from Net.autoencoder_dfnn import AutoencoderCnn, Dfnn
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def train():
     logger.info("Start !")
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  # GPU or CPU
     # prepare data
     s_train, s_val, m_train, m_val, statistics = prepare_data(conf['alpha'])
     logger.info("data shape: s_train-%s, s_val-%s, m_train-%s, m_val-%s, statistics-%s" %
@@ -92,6 +91,117 @@ def train():
     logger.info("save mode to ./data/%s" % filename)
     torch.save(net, './data/' + filename + '.pkl')
     plot_loss(loss_train_list, loss_val_list, filename)
+
+
+def train_autoencoder():
+    logger.info("Start train autoencoder dfnn")
+    # prepare data
+    s_train, s_val, m_train, m_val, statistics = prepare_data(conf['alpha'])
+    logger.info("data shape: s_train-%s, s_val-%s, m_train-%s, m_val-%s, statistics-%s" %
+                (s_train.shape, s_val.shape, m_train.shape, m_val.shape, statistics))
+    s_train, s_val = pad_data(s_train), pad_data(s_val)
+    logger.info("padding data shape: s_train-%s, s_val-%s, m_train-%s, m_val-%s" %
+                (s_train.shape, s_val.shape, m_train.shape, m_val.shape))
+
+    # build model
+    net_autoencoder = AutoencoderCnn(conf['n'], statistics).to(device)
+
+    logger.info("autoencoder net structure: %s" % net_autoencoder)
+    logger.info("net conf: %s" % conf)
+    # initialize weight parameters
+
+    net_autoencoder.apply(init_weights)
+
+    optimizer_a = torch.optim.Adam(net_autoencoder.parameters(), conf['lr'])
+
+    loss_func = torch.nn.MSELoss()
+
+    loss_train = 0
+    pre_loss = 10
+    cnt = 0
+    logger.info("Start train autoencoder model !")
+    for _ in range(conf['epoch']):
+        net_autoencoder.train()
+        for i in range(340):
+            y_train1 = s_train[i * 50:(i + 1) * 50, :].reshape(50, 1, 16, 16)
+            y_train1 = torch.Tensor(y_train1).to(device)
+            optimizer_a.zero_grad()  # clear the gradients
+            _y0 = net_autoencoder(y_train1, 0)
+            loss_train = loss_func(y_train1, _y0)
+            loss_train.backward()
+            optimizer_a.step()  # update weights
+
+        net_autoencoder.eval()
+        s0_val = s_val.reshape(s_val.shape[0], 1, 16, 16)
+        s0_val = torch.Tensor(s0_val).to(device)
+        c = net_autoencoder(s0_val, 0)
+        loss_val = loss_func(c, s0_val)
+
+        logger.info('Autoencoder: Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
+        if loss_train.item() > pre_loss:
+            cnt += 1
+            if cnt > 10:
+                logger.info('10 times without dropping, ending early')
+                break
+        pre_loss = loss_train.item()
+    filename = "model_autoencoder" + (str(conf['lr']).replace('0.', '_'))
+    logger.info("save mode to ./data/%s" % filename)
+    torch.save(net_autoencoder, './data/' + filename + '.pkl')
+
+
+def train_dfnn():
+    s_train, s_val, m_train, m_val, statistics = prepare_data(conf['alpha'])
+    logger.info("data shape: s_train-%s, s_val-%s, m_train-%s, m_val-%s, statistics-%s" %
+                (s_train.shape, s_val.shape, m_train.shape, m_val.shape, statistics))
+    s_train, s_val = pad_data(s_train), pad_data(s_val)
+    logger.info("padding data shape: s_train-%s, s_val-%s, m_train-%s, m_val-%s" %
+                (s_train.shape, s_val.shape, m_train.shape, m_val.shape))
+    net_autoencoder = torch.load('./data/model_autoencoder_001.pkl').to(device)
+    logger.info("start get y label ")
+    net_autoencoder.eval()
+    z_label = None
+    for i in range(340):
+        y_train1 = s_train[i * 50:(i + 1) * 50, :].reshape(50, 1, 16, 16)
+        y_train1 = torch.Tensor(y_train1).to(device)
+        _y0 = net_autoencoder(y_train1, 1)  # (50, n)
+        z_label = torch.cat((z_label, _y0), 0) if i > 0 else _y0
+    s0_val = s_val.reshape(s_val.shape[0], 1, 16, 16)
+    s0_val = torch.Tensor(s0_val).to(device)
+    z_val = net_autoencoder(s0_val, 1)
+    logger.info("start train Dfnn net")
+    x_train = m_train[0:340*50, :]
+    x_train = torch.Tensor(x_train).to(device)
+    cnt = 0
+    pre_loss = 10
+    net_dfnn = Dfnn(conf['n']).to(device)
+    net_dfnn.apply(init_weights)
+    optimizer_d = torch.optim.Adam(net_dfnn.parameters(), conf['lr'])
+    loss_func = torch.nn.MSELoss()
+    for _ in range(conf['epoch']):
+        net_dfnn.train()
+        optimizer_d.zero_grad()
+        _z0 = net_dfnn(x_train)
+        loss_train1 = loss_func(_z0, z_label)
+        loss_train1.backward(retain_graph=True)
+        optimizer_d.step()
+        net_dfnn.eval()
+        m0_val = torch.Tensor(m_val).to(device)
+        b = net_dfnn(m0_val)
+        loss_val = loss_func(b, z_val)
+        logger.info(
+            'DFNN: Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train1.item(), loss_val.item()))
+        print(
+            'DFNN: epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train1.item(), loss_val.item()))
+
+        if loss_train1.item() > pre_loss:
+            cnt += 1
+            if cnt > 10:
+                logger.info('10 times without dropping, ending early')
+                break
+        pre_loss = loss_train1.item()
+    filename = "model_dfnn" + (str(conf['lr']).replace('0.', '_'))
+    logger.info("save mode to ./data/%s" % filename)
+    torch.save(net_dfnn, './data/' + filename + '.pkl')
 
 
 def test():

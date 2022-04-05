@@ -121,7 +121,7 @@ def rm_pad_data(_data):
     """
     logger.debug("start rm padding data")
     data_n_256 = _data.reshape(_data.shape[0], 256)
-    data_n_204 = data_n_256[:, 52:256]
+    data_n_204 = data_n_256[:, 26:230]
     return data_n_204
 
 
