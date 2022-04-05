@@ -49,12 +49,12 @@ def max_min(s):
 
 
 def scaling(s, s_max, s_min):
-    s[:] = (s - s_min) / (s_max - s_min)
+    s = (s - s_min) / (s_max - s_min)
     return s
 
 
 def inverse_scaling(s, s_max, s_min):
-    s[:] = (s_max - s_min) * s + s_min
+    s = (s_max - s_min) * s + s_min
     return s
 
 
@@ -68,7 +68,7 @@ def safe_mkdir(path):
 def prepare_data(alpha=0.8):
     """prepare data
     :param alpha: training-validation splitting fraction
-    :return: S_train, S_val, M_train, M_val
+    :return: s_train, s_val, m_train, m_val
     """
 
     # load mat
@@ -108,8 +108,8 @@ def pad_data(_data):
     :return :
     """
     logger.debug("start padding data")
-    padding_data = np.zeros((_data.shape[0], 256 - _data.shape[1]))
-    _data = np.concatenate([padding_data, _data], axis=1)
+    padding_data = np.zeros((_data.shape[0], int((256 - _data.shape[1])/2)))
+    _data = np.concatenate([padding_data, _data, padding_data], axis=1)
 
     return _data
 
@@ -131,15 +131,15 @@ def compute_err(mor_solution, dg_solution):
     :param dg_solution: the numerical solution dg_solution.
     :return: the relative error between the DGTD and POD-DL-ROM solution
     """
-    logger.debug("start compute error")
+    logger.debug("start compute the relative error")
     # calculation of the error
     mor_hy, mor_ez = mor_solution[:, 0], mor_solution[:, 1]
     dg_hy, dg_ez = dg_solution[:, 0], dg_solution[:, 1]
-    err_hy = np.transpose(dg_hy - mor_hy) * (dg_hy - mor_hy)
-    err_ez = np.transpose(dg_ez - mor_ez) * (dg_ez - mor_ez)
+    err_hy = np.dot(dg_hy - mor_hy, dg_hy - mor_hy)
+    err_ez = np.dot(dg_ez - mor_ez, dg_ez - mor_ez)
 
-    err_hy = np.sum(np.sqrt(np.real(err_hy)))
-    err_ez = np.sum(np.sqrt(np.real(err_ez)))
+    err_hy = np.sqrt(np.real(err_hy))
+    err_ez = np.sqrt(np.real(err_ez))
 
     return err_hy, err_ez
 

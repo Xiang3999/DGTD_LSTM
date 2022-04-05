@@ -14,9 +14,9 @@ class PodDlRom(nn.Module):
     POD_DL_ROM net model
     """
 
-    def __init__(self, n, max_min):
+    def __init__(self, n, statistics):
         super(PodDlRom, self).__init__()
-        self.max_min = max_min
+        self.statistics = statistics
         self.encoder = nn.Sequential(
             # (16, 16, 1) ---> (16, 16, 8)
             nn.Conv2d(in_channels=1, out_channels=8, kernel_size=(5, 5), padding=2, stride=1),
@@ -50,20 +50,20 @@ class PodDlRom(nn.Module):
             nn.ELU(),
             # 256 ---> (2, 2, 64)
             nn.Unflatten(1, (64, 2, 2)),
-            # (2, 2, 64)  ---> (4, 4, 64)
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(5, 5), padding=5, stride=2),
-            nn.BatchNorm2d(64),
-            nn.ELU(),
-            # (4, 4, 64) ---> (8, 8, 32)
-            nn.Conv2d(in_channels=64, out_channels=32, kernel_size=(5, 5), padding=8, stride=2),
+            # (2, 2, 64) ---> (4, 4, 32)
+            nn.Conv2d(in_channels=64, out_channels=32, kernel_size=(5, 5), padding=5, stride=2),
             nn.BatchNorm2d(32),
             nn.ELU(),
-            # (8, 8, 32) ---> (16, 16, 16)
-            nn.Conv2d(in_channels=32, out_channels=16, kernel_size=(5, 5), padding=14, stride=2),
+            # (4, 4, 32) ---> (8, 8, 16)
+            nn.Conv2d(in_channels=32, out_channels=16, kernel_size=(5, 5), padding=8, stride=2),
             nn.BatchNorm2d(16),
             nn.ELU(),
-            # (16, 16, 16) ---> (16, 16, 1)
-            nn.Conv2d(in_channels=16, out_channels=1, kernel_size=(5, 5), padding=2, stride=1),
+            # (8, 8, 16) ---> (16, 16, 8)
+            nn.Conv2d(in_channels=16, out_channels=8, kernel_size=(5, 5), padding=14, stride=2),
+            nn.BatchNorm2d(8),
+            nn.ELU(),
+            # (16, 16, 8) ---> (16, 16, 1)
+            nn.Conv2d(in_channels=8, out_channels=1, kernel_size=(5, 5), padding=2, stride=1),
             nn.BatchNorm2d(1),
             nn.Sigmoid()
         )
@@ -96,4 +96,4 @@ class PodDlRom(nn.Module):
         else:
             _z1 = self.dfnn(_x)
             _y0 = self.decoder(_z1)
-            return [_y0]
+            return _y0

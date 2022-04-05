@@ -28,7 +28,7 @@ def plot_loss(loss_train_list, loss_val_list, filename=None):
     min_index = loss_train_list.index(min(loss_train_list))
     n = len(loss_train_list)
     # x label
-    x = np.arange(1,  n + 1)
+    x = np.arange(1, n + 1)
     # fig = plt.figure(figsize = (10, 7), dpi = 300)
     fig = plt.figure()
     # plot the figure
@@ -42,8 +42,49 @@ def plot_loss(loss_train_list, loss_val_list, filename=None):
     plt.ylabel(r"loss")
     plt.legend()
     if filename:
-        plt.savefig("./data/"+filename+".png")
+        plt.savefig("./data/" + filename + ".png")
     else:
         plt.savefig("./data/test.png")
     plt.show()
 
+
+def plot_time_field(t, type, a, b, c, d, e, f, g, h):
+    time = t
+    fig, subs = plt.subplots()
+    subs.plot(time, a, 'b-.', label=r'POD-DL-ROM, $\varepsilon_r = 1.215$')
+    subs.plot(time, e, 'b-', label=r'DGTD, $\varepsilon_r = 1.215$')
+
+    subs.plot(time, b, 'r-.', label=r'POD-DL-ROM, $\varepsilon_r = 2.215$')
+    subs.plot(time, f, 'r-', label=r'DGTD, $\varepsilon_r = 2.215$')
+
+    subs.plot(time, c, 'k-.', label=r'POD-DL-ROM, $\varepsilon_r = 3.215$')
+    subs.plot(time, g, 'k-', label=r'DGTD, $\varepsilon_r = 3.215$')
+
+    subs.plot(time, d, 'g-.', label=r'POD-DL-ROM, $\varepsilon_r = 4.215$')
+    subs.plot(time, h, 'g-', label=r'DGTD, $\varepsilon_r = 4.215$')
+
+    subs.set_xlabel('time(m)')
+    if type == 1:
+        subs.set_ylabel('$H_y$')
+    else:
+        subs.set_ylabel('$E_z$')
+    subs.legend()
+    plt.show()
+
+
+def plot_time_error(time, error):
+    time = time
+    fig, subs = plt.subplots(2, 2)
+    subs[0, 0].plot(time, error.mor_time_err_hy, 'b-', label=r'POD-DL-ROM')
+    subs[0, 0].plot(time, error.pro_time_err_hy, 'r--', label=r'Projection')
+    subs[0, 0].set_xlabel('time(m)')
+    subs[0, 0].set_ylabel('Relative error')
+    subs[0, 0].legend()
+
+    subs[0, 1].plot(time, error.mor_time_err_ez, 'b-', label=r'POD-DL-ROM')
+    subs[0, 1].plot(time, error.pro_time_err_ez, 'r--', label=r'Projection')
+    subs[0, 1].set_xlabel('time(m)')
+    subs[0, 1].set_ylabel('Relative error')
+    subs[0, 1].legend()
+
+    plt.show()
