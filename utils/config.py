@@ -12,6 +12,7 @@ def set_config():
     config['n'] = 20
     config['n_params'] = 1
     config['lr'] = 0.001
+    config['lr_d'] = 0.005
     config['omega_h'] = 0.5
     config['omega_n'] = 0.5
     config['batch_size'] = 50

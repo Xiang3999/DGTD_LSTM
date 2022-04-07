@@ -100,15 +100,19 @@ class Dfnn(nn.Module):
     def __init__(self, n):
         super(Dfnn, self).__init__()
         self.dfnn = nn.Sequential(
-            nn.Linear(2, 200),
-            nn.ELU(),
-            nn.Linear(200, 200),
-            nn.ELU(),
-            nn.Linear(200, 200),
-            nn.ELU(),
-            # nn.Linear(200, 200),
-            # nn.ELU(),
-            nn.Linear(200, n),
+            nn.Linear(2, 64),
+            nn.ReLU(),
+            nn.Linear(64, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 64),
+            nn.ReLU(),
+            nn.Linear(64, n),
             nn.Sigmoid()
         )
 

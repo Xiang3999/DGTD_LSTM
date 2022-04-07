@@ -5,6 +5,7 @@
 @File    ：main.py
 @Date    ：3/29/2022 11:07 AM 
 """
+import time
 import torch
 from utils.utils import *
 from utils.config import conf
@@ -47,9 +48,9 @@ def train():
     logger.info("Start train model !")
     for _ in range(conf['epoch']):
         for i in range(340):
-            y_train1 = s_train[i * 1:(i + 1) * 1, :].reshape(1, 1, 16, 16)
+            y_train1 = s_train[i * 50:(i + 1) * 50, :].reshape(50, 1, 16, 16)
             y_train1 = torch.Tensor(y_train1).to(device)
-            x_train1 = m_train[i * 1:(i + 1) * 1, :]
+            x_train1 = m_train[i * 50:(i + 1) * 50, :]
             x_train1 = torch.Tensor(x_train1).to(device)
             optimizer.zero_grad()  # clear the gradients
 
@@ -137,16 +138,16 @@ def train_autoencoder():
         c = net_autoencoder(s0_val, 0)
         loss_val = loss_func(c, s0_val)
 
-        logger.info('Autoencoder: Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
-        if loss_train.item() > pre_loss:
+        logger.info('Autoencoder: Epoch {}, Train Loss: {:.8f}, Val Loss: {:.8f}'.format(_, loss_train.item(), loss_val.item()))
+        if loss_val.item() > pre_loss:
             cnt += 1
-            if cnt > 10:
-                logger.info('10 times without dropping, ending early')
+            if cnt > 200:
+                logger.info('200 times without dropping, ending early')
                 break
-        pre_loss = loss_train.item()
-    filename = "model_autoencoder" + (str(conf['lr']).replace('0.', '_'))
+        pre_loss = loss_val.item()
+    filename = filename_prefix + '_autoencoder.pkl'
     logger.info("save mode to ./data/%s" % filename)
-    torch.save(net_autoencoder, './data/' + filename + '.pkl')
+    torch.save(net_autoencoder, './data/' + filename)
 
 
 def train_dfnn():
@@ -156,7 +157,7 @@ def train_dfnn():
     s_train, s_val = pad_data(s_train), pad_data(s_val)
     logger.info("padding data shape: s_train-%s, s_val-%s, m_train-%s, m_val-%s" %
                 (s_train.shape, s_val.shape, m_train.shape, m_val.shape))
-    net_autoencoder = torch.load('./data/model_autoencoder_001.pkl').to(device)
+    net_autoencoder = torch.load('./data/'+filename_prefix+'_autoencoder.pkl').to(device)
     logger.info("start get y label ")
     net_autoencoder.eval()
     z_label = None
@@ -174,8 +175,9 @@ def train_dfnn():
     cnt = 0
     pre_loss = 10
     net_dfnn = Dfnn(conf['n']).to(device)
+    logger.info("dfnn net structure: %s" % net_dfnn)
     net_dfnn.apply(init_weights)
-    optimizer_d = torch.optim.Adam(net_dfnn.parameters(), conf['lr'])
+    optimizer_d = torch.optim.Adam(net_dfnn.parameters(), conf['lr_d'])
     loss_func = torch.nn.MSELoss()
     for _ in range(conf['epoch']):
         net_dfnn.train()
@@ -189,19 +191,16 @@ def train_dfnn():
         b = net_dfnn(m0_val)
         loss_val = loss_func(b, z_val)
         logger.info(
-            'DFNN: Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train1.item(), loss_val.item()))
-        print(
-            'DFNN: epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train1.item(), loss_val.item()))
-
-        if loss_train1.item() > pre_loss:
+            'DFNN: Epoch {}, Train Loss: {:.8f}, Val Loss: {:.8f}'.format(_, loss_train1.item(), loss_val.item()))
+        if loss_val.item() > pre_loss:
             cnt += 1
-            if cnt > 10:
-                logger.info('10 times without dropping, ending early')
+            if cnt > 500:
+                logger.info('500 times without dropping, ending early')
                 break
-        pre_loss = loss_train1.item()
-    filename = "model_dfnn" + (str(conf['lr']).replace('0.', '_'))
+        pre_loss = loss_val.item()
+    filename = filename_prefix + '_dfnn.pkl'
     logger.info("save mode to ./data/%s" % filename)
-    torch.save(net_dfnn, './data/' + filename + '.pkl')
+    torch.save(net_dfnn, './data/' + filename)
 
 
 def test():
@@ -216,10 +215,11 @@ def test():
 
     # build and load model
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  # GPU or CPU
-    test_net = torch.load('./data/model_pod_ml_001.pkl').to(device)
-
+    test_net_a = torch.load('./data/'+filename_prefix+'_autoencoder.pkl').to(device)
+    test_net_d = torch.load('./data/'+filename_prefix+'_dfnn.pkl').to(device)
     # prediction
-    prediction = test_net(torch.Tensor(m_test).to(device))
+    tmp = test_net_d(torch.Tensor(m_test).to(device))
+    prediction = test_net_a(tmp, 2)
     prediction = prediction.data.cpu().numpy()
     print(prediction.shape)
 
@@ -228,8 +228,8 @@ def test():
     print(prediction.shape)
 
     # inverse_scaling
-    print(test_net.statistics[1], test_net.statistics[0])
-    prediction = inverse_scaling(prediction, test_net.statistics[1], test_net.statistics[0])
+    print(test_net_a.statistics[1], test_net_a.statistics[0])
+    prediction = inverse_scaling(prediction, test_net_a.statistics[1], test_net_a.statistics[0])
 
     # load the projection matrix Phi_hx, Phi_hy, Phi_ez
     time_param_pod = loadmat('./data/timeparameterPOD.mat')
@@ -284,10 +284,12 @@ def test():
     test_time = test_input['test']['time'][0][0].flatten()
     fig_time_hy = plot_time_field(test_time, 1, point_snap_hy_1215, point_snap_hy_2215, point_snap_hy_3215,
                                   point_snap_hy_4215,
-                                  point_mor_hy_1215, point_mor_hy_2215, point_mor_hy_3215, point_mor_hy_4215)
+                                  point_mor_hy_1215, point_mor_hy_2215, point_mor_hy_3215, point_mor_hy_4215,
+                                  filename_prefix)
     fig_time_ez = plot_time_field(test_time, 2, point_snap_ez_1215, point_snap_ez_2215, point_snap_ez_3215,
                                   point_snap_ez_4215,
-                                  point_mor_ez_1215, point_mor_ez_2215, point_mor_ez_3215, point_mor_ez_4215)
+                                  point_mor_ez_1215, point_mor_ez_2215, point_mor_ez_3215, point_mor_ez_4215,
+                                  filename_prefix)
 
     # refer to the code of PINN by CWQ
     # plt.savefig(r'D:\Data\GitHub\DGTD_LSTM\time_hy.png', dpi=300)
@@ -322,11 +324,17 @@ def test():
         error.pro_time_err_ez[i] = pro_err_ez / repro_err_ez
 
     # plot relative l2 error between pod-dl-rom and dgtd
-    time_err_1215 = plot_time_error(test_time, error)
+    logger.info("relative error: %s, test_time: %s" % (error, test_time))
+    plot_time_error(test_time, error, filename_prefix)
 
 
 if __name__ == '__main__':
     try:
+        global filename_prefix
+        # timestamp_n_lr
+        filename_prefix = str(int(time.time()))+"_"+str(conf['n'])+str(conf['lr']).replace('0.', '_')
+        train_autoencoder()
+        train_dfnn()
         test()
     except Exception as e:
         import traceback

@@ -42,13 +42,13 @@ def plot_loss(loss_train_list, loss_val_list, filename=None):
     plt.ylabel(r"loss")
     plt.legend()
     if filename:
-        plt.savefig("./data/" + filename + ".png")
+        plt.savefig("./data/" + filename + "_loss.png")
     else:
-        plt.savefig("./data/test.png")
+        plt.savefig("./data/test_loss.png")
     plt.show()
 
 
-def plot_time_field(t, type, a, b, c, d, e, f, g, h):
+def plot_time_field(t, type, a, b, c, d, e, f, g, h, filename=None):
     time = t
     fig, subs = plt.subplots()
     subs.plot(time, a, 'b-.', label=r'POD-DL-ROM, $\varepsilon_r = 1.215$')
@@ -66,25 +66,36 @@ def plot_time_field(t, type, a, b, c, d, e, f, g, h):
     subs.set_xlabel('time(m)')
     if type == 1:
         subs.set_ylabel('$H_y$')
+        if filename:
+            filename += "_time_field_hy.png"
     else:
         subs.set_ylabel('$E_z$')
+        if filename:
+            filename += "_time_field_hz.png"
     subs.legend()
+    if filename:
+        plt.savefig("./data/" + filename)
+    else:
+        plt.savefig("./data/test_time_field_.png")
     plt.show()
 
 
-def plot_time_error(time, error):
+def plot_time_error(time, error, filename=None):
     time = time
-    fig, subs = plt.subplots(2, 2)
-    subs[0, 0].plot(time, error.mor_time_err_hy, 'b-', label=r'POD-DL-ROM')
-    subs[0, 0].plot(time, error.pro_time_err_hy, 'r--', label=r'Projection')
-    subs[0, 0].set_xlabel('time(m)')
-    subs[0, 0].set_ylabel('Relative error')
-    subs[0, 0].legend()
+    fig, subs = plt.subplots(2)
+    subs[0].plot(time, error.mor_time_err_hy, 'b-', label=r'POD-DL-ROM')
+    subs[0].plot(time, error.pro_time_err_hy, 'r--', label=r'Projection')
+    subs[0].set_xlabel('time(m)')
+    subs[0].set_ylabel('Relative error')
+    subs[0].legend()
 
-    subs[0, 1].plot(time, error.mor_time_err_ez, 'b-', label=r'POD-DL-ROM')
-    subs[0, 1].plot(time, error.pro_time_err_ez, 'r--', label=r'Projection')
-    subs[0, 1].set_xlabel('time(m)')
-    subs[0, 1].set_ylabel('Relative error')
-    subs[0, 1].legend()
-
+    subs[1].plot(time, error.mor_time_err_ez, 'b-', label=r'POD-DL-ROM')
+    subs[1].plot(time, error.pro_time_err_ez, 'r--', label=r'Projection')
+    subs[1].set_xlabel('time(m)')
+    subs[1].set_ylabel('Relative error')
+    subs[1].legend()
+    if filename:
+        plt.savefig("./data/" + filename + "_time_error.png")
+    else:
+        plt.savefig("./data/test_time_error_.png")
     plt.show()
