@@ -51,17 +51,17 @@ def plot_loss(loss_train_list, loss_val_list, filename=None):
 def plot_time_field(t, type, a, b, c, d, e, f, g, h, filename=None):
     time = t
     fig, subs = plt.subplots()
-    subs.plot(time, a, 'b-.', label=r'POD-DL-ROM, $\varepsilon_r = 1.215$')
-    subs.plot(time, e, 'b-', label=r'DGTD, $\varepsilon_r = 1.215$')
+    subs.plot(time, a, 'b-.', label=r'DGTD, $\varepsilon_r = 1.215$')
+    subs.plot(time, e, 'b-', label=r'POD-DL-ROM, $\varepsilon_r = 1.215$')
 
-    subs.plot(time, b, 'r-.', label=r'POD-DL-ROM, $\varepsilon_r = 2.215$')
-    subs.plot(time, f, 'r-', label=r'DGTD, $\varepsilon_r = 2.215$')
+    subs.plot(time, b, 'r-.', label=r'DGTD, $\varepsilon_r = 2.215$')
+    subs.plot(time, f, 'r-', label=r'POD-DL-ROM, $\varepsilon_r = 2.215$')
 
-    subs.plot(time, c, 'k-.', label=r'POD-DL-ROM, $\varepsilon_r = 3.215$')
-    subs.plot(time, g, 'k-', label=r'DGTD, $\varepsilon_r = 3.215$')
+    subs.plot(time, c, 'k-.', label=r'DGTD, $\varepsilon_r = 3.215$')
+    subs.plot(time, g, 'k-', label=r'POD-DL-ROM, $\varepsilon_r = 3.215$')
 
-    subs.plot(time, d, 'g-.', label=r'POD-DL-ROM, $\varepsilon_r = 4.215$')
-    subs.plot(time, h, 'g-', label=r'DGTD, $\varepsilon_r = 4.215$')
+    subs.plot(time, d, 'g-.', label=r'DGTD, $\varepsilon_r = 4.215$')
+    subs.plot(time, h, 'g-', label=r'POD-DL-ROM, $\varepsilon_r = 4.215$')
 
     subs.set_xlabel('time(m)')
     if type == 1:

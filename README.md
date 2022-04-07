@@ -32,6 +32,25 @@ git stash apply
 git rm -r env/ --cached
 ```
 
+```shell
+# 将python 任务挂到后排
+nohup python3 -u main.py > mian_out.out 2>&1 &
+# 解释
+# 末尾的“&”：表示后台运行程序
+# “nohup” ：保证程序不被挂起
+# “python3”：是执行 python 代码的命令 (此处指定 Python 版本为 Python3)
+# “-u”：是为了禁止缓存，让结果可以直接进入日志文件 main_out.out（如果不加 - u，则会导致日志文件不会实时刷新代码中的 print 函数的信息）
+# “Job.py”：是欲执行的 python 的源代码文件，此处为 main.py
+# “Job_out.out”：是输出的日志文件
+# “>”：是指将打印信息指定到日志文件
+# “2>&1”：将标准错误输出转变化标准输出，可以将错误信息也输出到日志文件中（0-> stdin, 1->stdout, 2->stderr）
+
+#查看后台任务
+jobs
+# 或者
+ps -aux | grep python
+```
+
 ## REF
 
 ### PYTORCH
