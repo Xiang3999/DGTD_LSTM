@@ -198,7 +198,7 @@ def train_dfnn():
                 logger.info('500 times without dropping, ending early')
                 break
         pre_loss = loss_val.item()
-    filename = filename_prefix + '_dfnn.pkl'
+    filename = filename_prefix + str(conf['lr_d']).replace('0.', '_')+'_dfnn.pkl'
     logger.info("save mode to ./data/%s" % filename)
     torch.save(net_dfnn, './data/' + filename)
 
@@ -216,7 +216,7 @@ def test():
     # build and load model
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  # GPU or CPU
     test_net_a = torch.load('./data/'+filename_prefix+'_autoencoder.pkl').to(device)
-    test_net_d = torch.load('./data/'+filename_prefix+'_dfnn.pkl').to(device)
+    test_net_d = torch.load('./data/'+filename_prefix+str(conf['lr_d']).replace('0.', '_')+'_dfnn.pkl').to(device)
     # prediction
     tmp = test_net_d(torch.Tensor(m_test).to(device))
     prediction = test_net_a(tmp, 2)
@@ -280,16 +280,17 @@ def test():
     point_mor_ez_1215, point_mor_ez_2215, point_mor_ez_3215, point_mor_ez_4215 = \
         mor_ez_1215[10, :], mor_ez_2215[10, :], mor_ez_3215[10, :], mor_ez_4215[10, :]
 
+    filename_prefix_0 = filename_prefix + str(conf['lr_d']).replace('0.', '_')
     test_input = loadmat('./data/test/test.mat')
     test_time = test_input['test']['time'][0][0].flatten()
     fig_time_hy = plot_time_field(test_time, 1, point_snap_hy_1215, point_snap_hy_2215, point_snap_hy_3215,
                                   point_snap_hy_4215,
                                   point_mor_hy_1215, point_mor_hy_2215, point_mor_hy_3215, point_mor_hy_4215,
-                                  filename_prefix)
+                                  filename_prefix_0)
     fig_time_ez = plot_time_field(test_time, 2, point_snap_ez_1215, point_snap_ez_2215, point_snap_ez_3215,
                                   point_snap_ez_4215,
                                   point_mor_ez_1215, point_mor_ez_2215, point_mor_ez_3215, point_mor_ez_4215,
-                                  filename_prefix)
+                                  filename_prefix_0)
 
     # refer to the code of PINN by CWQ
     # plt.savefig(r'D:\Data\GitHub\DGTD_LSTM\time_hy.png', dpi=300)
@@ -325,17 +326,33 @@ def test():
 
     # plot relative l2 error between pod-dl-rom and dgtd
     logger.info("relative error: %s, test_time: %s" % (error, test_time))
-    plot_time_error(test_time, error, filename_prefix)
+    plot_time_error(test_time, error, filename_prefix_0)
+
+
+def train_args():
+    list_n = [70, 60, 50, 40, 30, 20, 10, 8, 4]
+    list_lr = [0.01, 0.005, 0.001, 0.0005, 0.0001]
+    for i in list_n:
+        conf['n'] = i
+        global filename_prefix
+        # timestamp_n_lr
+        filename_prefix = str(int(time.time())) + "_" + str(conf['n']) + str(conf['lr']).replace('0.', '_')
+        train_autoencoder()
+        for j in list_lr:
+            conf['lr_d'] = j
+            train_dfnn()
+            test()
 
 
 if __name__ == '__main__':
     try:
-        global filename_prefix
-        # timestamp_n_lr
-        filename_prefix = str(int(time.time()))+"_"+str(conf['n'])+str(conf['lr']).replace('0.', '_')
-        train_autoencoder()
-        train_dfnn()
-        test()
+        train_args()
+        # global filename_prefix
+        # # timestamp_n_lr
+        # filename_prefix = str(int(time.time()))+"_"+str(conf['n'])+str(conf['lr']).replace('0.', '_')
+        # train_autoencoder()
+        # train_dfnn()
+        # test()
     except Exception as e:
         import traceback
 
