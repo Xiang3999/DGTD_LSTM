@@ -33,7 +33,24 @@ git rm -r env/ --cached
 ```
 
 ```shell
-# 将python 任务挂到后排
+########### 配置python 环境  ##################
+# 下载 Anaconda 镜像
+wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-2019.03-Linux-x86_64.sh
+# 安装 Anaconda
+bash Anaconda3-2019.03-Linux-x86_64.sh
+
+# 创建虚拟环境
+conda create -n env3.9 python=3.9
+# 激活环境
+source activate
+conda activate env3.9
+# 安装python库
+pip install -r requirements.txt
+# 关闭
+conda deactivate
+
+
+########### 将python 任务挂到后台 ##############
 nohup python3 -u main.py > mian_out.out 2>&1 &
 # 解释
 # 末尾的“&”：表示后台运行程序
