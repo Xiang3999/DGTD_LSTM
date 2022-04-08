@@ -9,12 +9,14 @@ import time
 import torch
 from utils.utils import *
 from utils.config import conf
-from utils.visualize import plot_loss, plot_time_field, plot_time_error
+from utils.visualize import plot_loss, plot_time_field, plot_time_error, visdgtdsolution
 from Net.pod_dl_rom import PodDlRom
 from Log.log import logger
 from scipy.io import loadmat
 from Net.autoencoder_dfnn import AutoencoderCnn, Dfnn
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 
 def train():
     logger.info("Start !")
@@ -137,6 +139,8 @@ def train_autoencoder():
         s0_val = torch.Tensor(s0_val).to(device)
         c = net_autoencoder(s0_val, 0)
         loss_val = loss_func(c, s0_val)
+        print(
+            'Autoencoder: Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
 
         logger.info('Autoencoder: Epoch {}, Train Loss: {:.8f}, Val Loss: {:.8f}'.format(_, loss_train.item(), loss_val.item()))
         if loss_val.item() > pre_loss:
@@ -170,7 +174,7 @@ def train_dfnn():
     s0_val = torch.Tensor(s0_val).to(device)
     z_val = net_autoencoder(s0_val, 1)
     logger.info("start train Dfnn net")
-    x_train = m_train[0:340*50, :]
+    x_train = m_train[0:340 * 50, :]
     x_train = torch.Tensor(x_train).to(device)
     cnt = 0
     pre_loss = 10
@@ -326,6 +330,27 @@ def test():
     # plot relative l2 error between pod-dl-rom and dgtd
     logger.info("relative error: %s, test_time: %s" % (error, test_time))
     plot_time_error(test_time, error, filename_prefix)
+
+    # plot x-field and (x,y)-field
+    #mor_freq_hxe = fft(mor_hx_1215)  # size =(Nd, )
+    mor_freq_hye = fft(mor_hy_1215)
+    # print(max(mor_freq_hye), min(mor_freq_hye))
+    mor_freq_eze = fft(mor_ez_1215)
+    # print(max(mor_freq_eze), min(mor_freq_eze))
+
+    #dgtd_freq_hxe = fft(snap_hx_1215)
+    dgtd_freq_hye = fft(snap_hy_1215)
+    # print(max(dgtd_freq_hye), min(dgtd_freq_hye))
+    dgtd_freq_eze = fft(snap_ez_1215)
+    # print(max(dgtd_freq_hye), min(dgtd_freq_hye))
+
+    version = 2
+    mor_freq = np.vstack((mor_freq_hye, mor_freq_eze)).T
+    dgtd_freq = np.vstack((dgtd_freq_hye, dgtd_freq_eze)).T
+    dofmat = loadmat('./data/dofmat.mat')
+    dofmat = dofmat['dofmat']['DOF'][0][0]  # size=(5044,6,2)
+    visdgtdsolution(mor_freq, dgtd_freq, dofmat, version, filename_prefix)
+    visdgtdsolution(mor_freq, dgtd_freq, dofmat, 1, filename_prefix)
 
 
 if __name__ == '__main__':

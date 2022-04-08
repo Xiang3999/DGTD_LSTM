@@ -3,10 +3,10 @@
 ## TODO LIST
 
 - [X] add logging feature
-- [ ] add visualize feature
-- [ ] add calculate relative error feature
+- [X] add visualize feature
+- [X] add calculate relative error feature
 - [ ] add PINN loss
-- [ ] parameter tuning 
+- [ ] parameter tuning
 
 ## ENV
 

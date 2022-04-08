@@ -122,6 +122,3 @@ class Dfnn(nn.Module):
         :return:
         """
         return self.dfnn(_x)
-
-
-

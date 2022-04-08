@@ -6,14 +6,14 @@ some utils function for data processing
 
 import os
 import numpy as np
-import scipy.io as sio
 import h5py
 import torch.nn as nn
 from Log.log import logger
+from scipy.io import loadmat
 
 
 def read_data(mat):
-    data = sio.loadmat(mat)
+    data = loadmat(mat)
     s = data['SN'].squeeze()
     s = np.transpose(s)
 
@@ -27,7 +27,7 @@ def read_large_data(mat):
 
 
 def read_params(mat):
-    params = sio.loadmat(mat)
+    params = loadmat(mat)
     params = params['M'].squeeze()
     params = np.transpose(params)
 
@@ -35,7 +35,7 @@ def read_params(mat):
 
 
 def read_params_test(mat):
-    params = sio.loadmat(mat)
+    params = loadmat(mat)
     params = params['M_test']
 
     return params
@@ -108,7 +108,7 @@ def pad_data(_data):
     :return :
     """
     logger.debug("start padding data")
-    padding_data = np.zeros((_data.shape[0], int((256 - _data.shape[1])/2)))
+    padding_data = np.zeros((_data.shape[0], int((256 - _data.shape[1]) / 2)))
     _data = np.concatenate([padding_data, _data, padding_data], axis=1)
 
     return _data
@@ -147,3 +147,31 @@ def compute_err(mor_solution, dg_solution):
 def init_weights(m):
     if type(m) == nn.Linear:
         nn.init.xavier_normal_(m.weight, gain=1)
+
+
+def fft(solution):
+    """
+    Fast Fourier Transformation
+    :param solution: the dgtd solution or mor solution on time domain
+    :return the dgtd solution or mor solution on frequency  domain
+    """
+    parameter = loadmat('./data/parameter.mat')
+    dt = parameter['parameter']['dt'][0][0][0][0]
+    freq = parameter['parameter']['freq'][0][0][0][0]
+    c0 = parameter['parameter']['c0'][0][0][0][0]
+    ndof = 30264
+    # using fft
+    t = dt
+    fs = 1 / t
+    n = solution.shape[1]
+    #  Fx = 0:Fs / (n - 1): Fs
+    fx = np.array(range(n)) * (fs / n)  # size=(Nt,)
+    fn = freq / c0
+    fftf = np.fft.fft(solution, axis=1)  # 默认对矩阵的列进行Fourier变换, size=(Nd,Nt)
+
+    # pod_solution = fftf(2,:)'/(N/2)
+    pod_solution = np.zeros(ndof)
+    for k in range(ndof):
+        pod_solution[k] = np.interp(fn, fx, np.real(fftf[k, :])) / (n / 2)
+
+    return pod_solution
