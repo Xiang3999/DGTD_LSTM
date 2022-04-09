@@ -39,6 +39,13 @@ wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-2019.03-Lin
 # 安装 Anaconda
 bash Anaconda3-2019.03-Linux-x86_64.sh
 
+# 安装完后，将conda 添加到环境变量里
+sudo vim ~/.bashrc
+# 在文末添加 anaconda3/bin的位置
+export PATH=$PATH:/fastone/users/u176xxxxxxx7/anaconda3/bin
+# : wq 保存，并source 一次
+source ~/.bashrc
+
 # 创建虚拟环境
 conda create -n env3.9 python=3.9
 # 激活环境
