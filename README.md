@@ -58,7 +58,7 @@ conda deactivate
 
 
 ########### 将python 任务挂到后台 ##############
-nohup python3 -u main.py > mian_out.out 2>&1 &
+nohup python3 -u main.py > main_out.out 2>&1 &
 # 解释
 # 末尾的“&”：表示后台运行程序
 # “nohup” ：保证程序不被挂起

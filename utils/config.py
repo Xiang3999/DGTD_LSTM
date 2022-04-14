@@ -7,12 +7,14 @@ set the config of model
 
 def set_config():
     config = dict()
-    config['epoch'] = 100
+    config['epoch'] = 5000
     config['alpha'] = 0.8
-    config['n'] = 20
+    config['n'] = 10
     config['n_params'] = 1
     config['lr'] = 0.001
     config['lr_d'] = 0.005
+    config['weight_decay'] = 1e-7
+    config['lambda'] = lambda epoch: 0.95 ** (epoch // 200)
     config['omega_h'] = 0.5
     config['omega_n'] = 0.5
     config['batch_size'] = 50

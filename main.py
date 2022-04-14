@@ -143,7 +143,7 @@ def train_autoencoder():
             'Autoencoder: Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
 
         logger.info('Autoencoder: Epoch {}, Train Loss: {:.8f}, Val Loss: {:.8f}'.format(_, loss_train.item(), loss_val.item()))
-        if loss_val.item() > pre_loss:
+        if loss_val.item() >= pre_loss:
             cnt += 1
             if cnt > 200:
                 logger.info('200 times without dropping, ending early')
@@ -173,6 +173,8 @@ def train_dfnn():
     s0_val = s_val.reshape(s_val.shape[0], 1, 16, 16)
     s0_val = torch.Tensor(s0_val).to(device)
     z_val = net_autoencoder(s0_val, 1)
+    torch.save(z_label, './data/' + filename_prefix + '_zlabel.pt')
+    torch.save(z_val, './data/' + filename_prefix + '_zval.pt')
     logger.info("start train Dfnn net")
     x_train = m_train[0:340 * 50, :]
     x_train = torch.Tensor(x_train).to(device)
@@ -181,7 +183,9 @@ def train_dfnn():
     net_dfnn = Dfnn(conf['n']).to(device)
     logger.info("dfnn net structure: %s" % net_dfnn)
     net_dfnn.apply(init_weights)
-    optimizer_d = torch.optim.Adam(net_dfnn.parameters(), conf['lr_d'])
+    optimizer_d = torch.optim.Adam(net_dfnn.parameters(), lr=conf['lr_d'], weight_decay=conf['weight_decay'])
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer_d, lr_lambda=conf['lambda'])
+
     loss_func = torch.nn.MSELoss()
     for _ in range(conf['epoch']):
         net_dfnn.train()
@@ -190,13 +194,14 @@ def train_dfnn():
         loss_train1 = loss_func(_z0, z_label)
         loss_train1.backward(retain_graph=True)
         optimizer_d.step()
+        scheduler.step()
         net_dfnn.eval()
         m0_val = torch.Tensor(m_val).to(device)
         b = net_dfnn(m0_val)
         loss_val = loss_func(b, z_val)
         logger.info(
             'DFNN: Epoch {}, Train Loss: {:.8f}, Val Loss: {:.8f}'.format(_, loss_train1.item(), loss_val.item()))
-        if loss_val.item() > pre_loss:
+        if loss_val.item() >= pre_loss:
             cnt += 1
             if cnt > 500:
                 logger.info('500 times without dropping, ending early')
@@ -222,6 +227,28 @@ def test():
     test_net_a = torch.load('./data/'+filename_prefix+'_autoencoder.pkl').to(device)
     test_net_d = torch.load('./data/'+filename_prefix+'_dfnn.pkl').to(device)
     # prediction
+    # tmp = test_net_d(torch.Tensor(m_test).to(device))
+    # prediction = test_net_a(tmp, 2)
+    # prediction = prediction.data.cpu().numpy()
+    # print(prediction.shape)
+
+    # =========================================================================
+    # data = loadmat('./data/test/SN_test.mat')
+    #
+    # s = data['SN_test']['test'][0][0]
+    # s = np.transpose(s)
+    #
+    # # normalize
+    # s_max, s_min = max_min(s)
+    # s = scaling(s, s_max, s_min)
+    #
+    # s_test = pad_data(s)
+    # print(s_test.shape)
+    # s0_test = s_test.reshape(s_test.shape[0], 1, 16, 16)
+    # s0_test = torch.Tensor(s0_test).to(device)
+
+    # prediction = test_net_a(s0_test, 0)
+    # =================================================================
     tmp = test_net_d(torch.Tensor(m_test).to(device))
     prediction = test_net_a(tmp, 2)
     prediction = prediction.data.cpu().numpy()
@@ -328,7 +355,7 @@ def test():
         error.pro_time_err_ez[i] = pro_err_ez / repro_err_ez
 
     # plot relative l2 error between pod-dl-rom and dgtd
-    logger.info("relative error: %s, test_time: %s" % (error, test_time))
+    logger.info("relative error: %s, test_time: %s" % (error.mor_time_err_hy, error.mor_time_err_ez))
     plot_time_error(test_time, error, filename_prefix)
 
     # plot x-field and (x,y)-field
