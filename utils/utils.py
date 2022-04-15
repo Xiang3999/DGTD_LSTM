@@ -145,8 +145,10 @@ def compute_err(mor_solution, dg_solution):
 
 
 def init_weights(m):
-    if type(m) == nn.Linear:
+    if isinstance(m, nn.Linear):
         nn.init.xavier_normal_(m.weight, gain=1)
+    elif isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+        nn.init.kaiming_uniform(m.weight.data, nonliearity='relu')
 
 
 def fft(solution):

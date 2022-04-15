@@ -18,85 +18,8 @@ from Net.autoencoder_dfnn import AutoencoderCnn, Dfnn
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def train():
-    logger.info("Start !")
-    # prepare data
-    s_train, s_val, m_train, m_val, statistics = prepare_data(conf['alpha'])
-    logger.info("data shape: s_train-%s, s_val-%s, m_train-%s, m_val-%s, statistics-%s" %
-                (s_train.shape, s_val.shape, m_train.shape, m_val.shape, statistics))
-    s_train, s_val = pad_data(s_train), pad_data(s_val)
-    logger.info("padding data shape: s_train-%s, s_val-%s, m_train-%s, m_val-%s" %
-                (s_train.shape, s_val.shape, m_train.shape, m_val.shape))
-
-    # build model
-    net = PodDlRom(conf['n'], statistics).to(device)
-
-    logger.info("net structure: %s" % net)
-    logger.info("net conf: %s" % conf)
-
-    # initialize weight parameters
-    net.apply(init_weights)
-
-    # optimizer
-    optimizer = torch.optim.Adam(net.parameters(), conf['lr'])
-    # loss function
-    loss_func = torch.nn.MSELoss()
-    # train model
-    loss_train_list = []
-    loss_val_list = []
-    loss_train = 0
-    pre_loss = 10
-    cnt = 0
-    logger.info("Start train model !")
-    for _ in range(conf['epoch']):
-        for i in range(340):
-            y_train1 = s_train[i * 50:(i + 1) * 50, :].reshape(50, 1, 16, 16)
-            y_train1 = torch.Tensor(y_train1).to(device)
-            x_train1 = m_train[i * 50:(i + 1) * 50, :]
-            x_train1 = torch.Tensor(x_train1).to(device)
-            optimizer.zero_grad()  # clear the gradients
-
-            net.train()
-            _z0, _z1, _y0 = net(x_train1, y_train1)
-
-            # if i == 0:
-            #     print(_y0[0:4, 0, 10, 10])
-
-            # print([_z0.size(), _z1.size(), _y0.size(), y_train1.size()])
-            # [torch.Size([50, 2]), torch.Size([50, 2]), torch.Size([50, 1, 16, 16]), torch.Size([50, 1, 16, 16])]
-            loss_train1 = loss_func(_z0, _z1)
-            loss_train2 = loss_func(y_train1, _y0)
-            loss_train = 0.5 * loss_train2 + 0.5 * loss_train1
-
-            loss_train.backward()
-            optimizer.step()  # update weights
-
-        loss_train_list.append(loss_train.item())
-        net.eval()
-        s0_val = s_val.reshape(s_val.shape[0], 1, 16, 16)
-        s0_val = torch.Tensor(s0_val).to(device)
-        m0_val = torch.Tensor(m_val).to(device)
-        a, b, c = net(m0_val, s0_val)
-        loss_val = 0.5 * loss_func(a, b) + 0.5 * loss_func(c, s0_val)
-        loss_val_list.append(loss_val.item())
-
-        logger.info('Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
-        print('epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
-
-        if loss_train.item() > pre_loss:
-            cnt += 1
-            if cnt > 10:
-                logger.info('10 times without dropping, ending early')
-                break
-        pre_loss = loss_train.item()
-
-    filename = "model_pod_ml" + (str(conf['lr']).replace('0.', '_'))
-    logger.info("save mode to ./data/%s" % filename)
-    torch.save(net, './data/' + filename + '.pkl')
-    plot_loss(loss_train_list, loss_val_list, filename)
-
-
 def train_autoencoder():
+    """train autoencoder"""
     logger.info("Start train autoencoder dfnn")
     # prepare data
     s_train, s_val, m_train, m_val, statistics = prepare_data(conf['alpha'])
@@ -122,11 +45,12 @@ def train_autoencoder():
     loss_train = 0
     pre_loss = 10
     cnt = 0
+    bs = 64
     logger.info("Start train autoencoder model !")
     for _ in range(conf['epoch']):
         net_autoencoder.train()
-        for i in range(340):
-            y_train1 = s_train[i * 50:(i + 1) * 50, :].reshape(50, 1, 16, 16)
+        for i in range(int(s_train.shape[0]/bs)):
+            y_train1 = s_train[i * bs:(i + 1) * bs, :].reshape(bs, 1, 16, 16)
             y_train1 = torch.Tensor(y_train1).to(device)
             optimizer_a.zero_grad()  # clear the gradients
             _y0 = net_autoencoder(y_train1, 0)
@@ -142,7 +66,8 @@ def train_autoencoder():
         print(
             'Autoencoder: Epoch {}, Train Loss: {:.6f}, Val Loss: {:.6f}'.format(_, loss_train.item(), loss_val.item()))
 
-        logger.info('Autoencoder: Epoch {}, Train Loss: {:.8f}, Val Loss: {:.8f}'.format(_, loss_train.item(), loss_val.item()))
+        logger.info(
+            'Autoencoder: Epoch {}, Train Loss: {:.8f}, Val Loss: {:.8f}'.format(_, loss_train.item(), loss_val.item()))
         if loss_val.item() >= pre_loss:
             cnt += 1
             if cnt > 200:
@@ -161,7 +86,7 @@ def train_dfnn():
     s_train, s_val = pad_data(s_train), pad_data(s_val)
     logger.info("padding data shape: s_train-%s, s_val-%s, m_train-%s, m_val-%s" %
                 (s_train.shape, s_val.shape, m_train.shape, m_val.shape))
-    net_autoencoder = torch.load('./data/'+filename_prefix+'_autoencoder.pkl').to(device)
+    net_autoencoder = torch.load('./data/' + filename_prefix + '_autoencoder.pkl').to(device)
     logger.info("start get y label ")
     net_autoencoder.eval()
     z_label = None
